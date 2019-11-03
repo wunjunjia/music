@@ -1,32 +1,82 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
+  <div id="app" class="app">
+    <Header />
+    <ul class="nav">
+      <li class="item">
+        <router-link to="/recommend">推荐</router-link>
+      </li>
+      <li class="item">
+        <router-link to="/singer">歌手</router-link>
+      </li>
+      <li class="item">
+        <router-link to="/rank">排名</router-link>
+      </li>
+      <li class="item">
+        <router-link to="/search">搜索</router-link>
+      </li>
+    </ul>
+    <div class="container" :style="{bottom}">
+      <keep-alive>
+        <router-view></router-view>
+      </keep-alive>
     </div>
-    <router-view/>
+    <Play />
+    <PlayList />
   </div>
 </template>
+<script>
+import { mapState } from 'vuex';
+import Header from '@/components/Header/index.vue';
+import Play from '@/components/Play/index.vue';
+import PlayList from '@/components/PlayList/index.vue';
 
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+export default {
+  name: 'App',
+  computed: {
+    ...mapState('global', {
+      bottom: state => state.bottom,
+    }),
+  },
+  components: {
+    Header,
+    Play,
+    PlayList,
+  },
+};
+
+</script>
+<style lang="scss">
+.app {
+  position: relative;
+
+  >.nav {
+    display: flex;
+    height: 44px;
+
+    >.item {
+      flex: 1;
+      height: 100%;
+      line-height: 44px;
+      text-align: center;
+
+      >a {
+        font-size: $font-size-medium;
+        padding-bottom: 5px;
+
+        &.router-link-active {
+          color: $color-theme;
+          border-bottom: 2px solid $color-theme;
+        }
+      }
+    }
+  }
+
+  >.container {
+    position: fixed;
+    top: 88px;
+    left: 0;
+    right: 0;
+  }
 }
 
-#nav {
-  padding: 30px;
-}
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
-}
 </style>

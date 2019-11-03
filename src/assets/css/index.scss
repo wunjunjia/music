@@ -1,0 +1,26 @@
+@import "./icon";
+@import "variable";
+@import "base";
+@import "mixin";
+@import "reset";
+
+.rotation {
+    animation-name: rotation;
+    animation-duration: 20s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+
+    &.pause {
+        animation-play-state: paused;
+    }
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
