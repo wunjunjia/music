@@ -5,7 +5,7 @@
         <h1 class="title">是否清空播放列表</h1>
         <div class="btn">
           <span @click="toggle">取消</span>
-          <span @click="confirm">清空</span>
+          <span @click="_confirm">清空</span>
         </div>
       </div>
     </div>
@@ -28,6 +28,10 @@ export default {
   methods: {
     toggle() {
       this.show = !this.show;
+    },
+    _confirm() {
+      this.toggle();
+      this.confirm();
     },
   },
 };

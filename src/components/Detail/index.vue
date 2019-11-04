@@ -2,7 +2,7 @@
   <div class="detail" :style="{bottom}">
     <div class="header">
       <span class="icon" @click="back"><i class="icon-back"></i></span>
-      <p class="name">{{ target.name }}</p>
+      <p class="name">{{ target.text }}</p>
     </div>
     <div class="avatar" :style="{backgroundImage: `url(${target.image})`}" ref="avatar">
       <div class="mask"></div>
@@ -45,16 +45,15 @@ export default {
       type: Object,
       required: true,
     },
-    back: {
-      type: Function,
-      required: true,
-    },
   },
   components: {
     Loading,
     ScrollView,
   },
   methods: {
+    back() {
+      this.$router.history.go(-1);
+    },
     randomPlay() {
       if (this.loading) return;
       if (this.mode !== RANDOM) this[UPDATE_MODE](RANDOM);
@@ -94,11 +93,10 @@ export default {
       this.$refs.content.style.top = `${top}px`;
     },
     refresh() {
-      this.$nextTick(() => {
-        const offsetHeight = this.$refs.avatar.offsetHeight;
-        this.$refs.content.style.top = `${offsetHeight}px`;
-        this.$refs.scrollView.$el.style.height = `${document.documentElement.clientHeight - offsetHeight - parseInt(this.bottom, 10)}px`;
-      });
+      const offsetHeight = this.$refs.avatar.offsetHeight;
+      this.$refs.content.style.top = `${offsetHeight}px`;
+      this.$refs.scrollView.$el.style.height = `${document.documentElement.clientHeight - offsetHeight - parseInt(this.bottom, 10)}px`;
+      this.$refs.scrollView.refresh();
     },
     ...mapActions('play', ['choose', 'random']),
     ...mapMutations('global', [UPDATE_BOTTOM]),
@@ -118,6 +116,7 @@ export default {
     bottom(value) {
       const offsetHeight = this.$refs.avatar.offsetHeight;
       this.$refs.scrollView.$el.style.height = `${document.documentElement.clientHeight - offsetHeight - parseInt(value, 10)}px`;
+      this.$refs.scrollView.refresh();
     },
   },
 };

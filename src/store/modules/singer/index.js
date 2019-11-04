@@ -1,6 +1,6 @@
 import {singerDetailParam, SUCCESS} from '@/config';
 import {jsonp} from '@/utils';
-import { ADD, BATCH_ADD, UPDATE_SONGS_DATA } from './mutation-types';
+import { BATCH_ADD, UPDATE_SONGS_DATA } from './mutation-types';
 import Song from '@/model/song';
 
 const state = {
@@ -32,17 +32,16 @@ const actions = {
             serial,
             songs,
           });
+          return songs;
         }
+        return [];
       });
   },
 };
 
 const mutations = {
-  [ADD](state, payload) {
-    state.singers.push(payload);
-  },
   [BATCH_ADD](state, payload) {
-    payload.forEach(singer => state.singers.push(singer));
+    state.singers = payload;
   },
   [UPDATE_SONGS_DATA](state, {serial, songs}) {
     const singer = state.singers.find(singer => singer.serial === serial);

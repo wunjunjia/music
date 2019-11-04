@@ -1,29 +1,8 @@
 <template>
   <div>
-    <NormalPlay
-      :close="close"
-      :togglePlayState="togglePlayState"
-      :getMiniAvatarStyles="getMiniAvatarStyles"
-      :currentTime="currentTime"
-      :updateCurrentTime="updateCurrentTime"
-      ref="normalPlay"
-    />
-    <MiniPlay
-      :open="open"
-      :togglePlayState="togglePlayState"
-      ref="miniPlay"
-      :currentTime="currentTime"
-    />
-    <audio
-      v-if="song.audioSrc"
-      ref="audio"
-      :src="song.audioSrc"
-      @loadeddata="loadeddata"
-      @canplay="canplay"
-      @ended="ended"
-      @error="error"
-      @timeupdate="timeUpdate"
-    ></audio>
+    <NormalPlay :close="close" :togglePlayState="togglePlayState" :getMiniAvatarStyles="getMiniAvatarStyles" :currentTime="currentTime" :updateCurrentTime="updateCurrentTime" ref="normalPlay" />
+    <MiniPlay :open="open" :togglePlayState="togglePlayState" ref="miniPlay" :currentTime="currentTime" />
+    <audio v-if="song.audioSrc" ref="audio" :src="song.audioSrc" @loadeddata="loadeddata" @canplay="canplay" @ended="ended" @error="error" @timeupdate="timeUpdate"></audio>
   </div>
 </template>
 <script>
@@ -95,11 +74,11 @@ export default {
       this.$refs.audio.currentTime = value;
     },
     togglePlayState() {
-      this.playState ? this.$refs.audio.pause() : this.$refs.audio.play();
       this[UPDATE_PLAYSTATE](!this.playState);
+      this.playState ? this.$refs.audio.play() : this.$refs.audio.pause();
     },
     timeUpdate() {
-      this.currentTime = parseInt(this.$refs.audio.currentTime, 10);
+      if (this.$refs.audio) this.currentTime = parseInt(this.$refs.audio.currentTime, 10);
     },
     getMiniAvatarStyles() {
       return this.$refs.miniPlay.getAvatarStyles();

@@ -2,6 +2,7 @@ import logo from '@/assets/logo.png';
 
 class Song {
   constructor({
+    id = '',
     strMediaMid = '',
     albumname = '',
     albummid = '',
@@ -13,11 +14,16 @@ class Song {
     canplay = true,
     lyric = '',
   }) {
+    // 这个属性在获取歌词用到
+    this.id = id;
     this.authors = authors;
+    // 这个属性在拼接audioSrc值时用到
     this.strMediaMid = strMediaMid;
     this.albumname = albumname;
+    // 图片路径
     this.albummid = albummid;
     this.songname = songname;
+    // 获取vkey
     this.songmid = songmid;
     this.audioSrc = audioSrc;
     this.interval = interval;

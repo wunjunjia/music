@@ -5,6 +5,9 @@ const axios = require('axios');
 
 const router = express.Router();
 
+const SINGER_DETAIL = 'SINGER_DETAIL';
+const CD_DETAIL = 'CD_DETAIL';
+
 const instance = axios.create({
   headers: {
     Origin: 'https://y.qq.com',
@@ -13,7 +16,7 @@ const instance = axios.create({
   },
 });
 
-router.get('/songList', (req, res, next) => {
+router.get('/cdList', (req, res, next) => {
   const paramString = Object.keys(req.query).reduce((result, key) => {
     result.push(`${key}=${req.query[key]}`);
     return result;
@@ -89,18 +92,74 @@ router.get('/vkey', (req, res, next) => {
     });
 });
 
-router.get('/lyric', (req, res, next) => {
-  instance.get('https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg', {
+const lyric = {
+  [SINGER_DETAIL]({songmid}) {
+    return {
       params: {
         '-': 'MusicJsonCallback_lrc',
         pcachetime: Date.now(),
-        songmid: req.query.songmid,
+        songmid,
         g_tk: 5381,
         loginUin: 0,
         hostUin: 0,
         format: 'json',
         inCharset: 'utf8',
         outCharset: 'utf8',
+        notice: 0,
+        platform: 'yqq.json',
+        needNewCode: 0,
+      },
+    };
+  },
+  [CD_DETAIL]({songmid, id}) {
+    return {
+      headers: {
+        Referer: `https://y.qq.com/n/yqq/song/${songmid}.html`,
+      },
+      params: {
+        nobase64: 1,
+        musicid: id,
+        '-': 'jsonp1',
+        g_tk: 5381,
+        loginUin: 0,
+        hostUin: 0,
+        format: 'json',
+        inCharset: 'utf8',
+        outCharset: 'utf-8',
+        notice: 0,
+        platform: 'yqq.json',
+        needNewCode: 0,
+      },
+    };
+  },
+};
+
+router.get('/lyric', (req, res, next) => {
+  const { way, ...rest } = req.query;
+  instance.get('https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg', lyric[way](rest))
+    .then((result) => {
+      res.json(result.data);
+    });
+});
+
+router.get('/cdDetail', (req, res, next) => {
+  instance.get('https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg', {
+      headers: {
+        Referer: `https://y.qq.com/n/yqq/playlist/${req.query.id}.html`,
+      },
+      params: {
+        type: 1,
+        json: 1,
+        utf8: 1,
+        onlysong: 0,
+        new_format: 1,
+        disstid: req.query.id,
+        g_tk: 5381,
+        loginUin: 0,
+        hostUin: 0,
+        format: 'json',
+        inCharset: 'utf8',
+        outCharset: 'utf-8',
         notice: 0,
         platform: 'yqq.json',
         needNewCode: 0,

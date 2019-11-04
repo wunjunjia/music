@@ -8,14 +8,21 @@ import {
   UPDATE_SONG_LYRIC,
   BATCH_ADD,
 } from './mutation-types';
-import { SEQUENCE, RANDOM, LOOP } from '@/config';
+import {
+  SEQUENCE,
+  RANDOM,
+  LOOP,
+  SINGER_DETAIL,
+  CD_DETAIL,
+  SUCCESS,
+} from '@/config';
 
-function get(url, songmid, check) {
+function get(url, params, check) {
   return new Promise((resolve, reject) => {
     function monitor(count) {
       if (count < 3) {
         try {
-          axios.get(url, { params: { songmid } })
+          axios.get(url, { params })
             .then((res) => {
               const flag = check(res.data);
               if (flag) monitor(count + 1);
@@ -32,15 +39,24 @@ function get(url, songmid, check) {
   });
 }
 
-function getData(commit, payload, handle) {
-  const songmid = payload.song.songmid;
+const ways = {
+  [SINGER_DETAIL](lyric) {
+    return Base64.decode(lyric);
+  },
+  [CD_DETAIL](lyric) {
+    return lyric;
+  },
+};
+
+function getData(commit, payload, handle, way) {
+  const { songmid, id } = payload.song;
   return Promise.all([
-    get('/api/vkey', songmid, data => data.req_0.data.midurlinfo[0].vkey === ''),
-    get('/api/lyric', songmid, data => data.lyric === ''),
+    get('/api/vkey', { songmid }, data => data.req_0.data.midurlinfo[0].vkey === ''),
+    get('/api/lyric', { songmid, way, id }, () => false),
   ]).then(([vkey, lyric]) => {
     if (vkey) {
       handle(payload);
-      commit(UPDATE_SONG_LYRIC, Base64.decode(lyric.lyric));
+      commit(UPDATE_SONG_LYRIC, ways[way](lyric.code === SUCCESS ? lyric.lyric : ''));
       commit(UPDATE_SONG_AUDIOSRC, vkey.req_0.data.midurlinfo[0].vkey);
       return true;
     }
@@ -59,7 +75,7 @@ const operator = {
 };
 
 export default {
-  random({ commit }, payload) {
+  random({ commit, state }, payload) {
     commit(UPDATE_LOADING, true);
     const index = parseInt(Math.random() * payload.length, 10);
 
@@ -80,7 +96,7 @@ export default {
         const next = operator.next(current, payload.length);
         const song = payload[next];
         if (song.audioSrc === '') {
-          getData(commit, { song }, handle)
+          getData(commit, { song }, handle, state.way)
             .then((res) => {
               if (res) {
                 resolve(true);
@@ -120,7 +136,7 @@ export default {
         const next = operator[o](current, state.songs.length);
         if (song.canplay) {
           if (song.audioSrc === '') {
-            getData(commit, { song, current }, handle)
+            getData(commit, { song, current }, handle, state.way)
               .then((res) => {
                 if (res) {
                   resolve();
@@ -160,7 +176,7 @@ export default {
       }
     });
   },
-  choose({ commit }, { mutation, song }) {
+  choose({ commit, state }, { mutation, song }) {
     function handle({ song }) {
       commit(mutation, song);
     }
@@ -168,7 +184,7 @@ export default {
     return new Promise((resolve, reject) => {
       if (song.audioSrc === '') {
         commit(UPDATE_LOADING, true);
-        getData(commit, { song }, handle)
+        getData(commit, { song }, handle, state.way)
           .then((res) => {
             resolve(res);
           })

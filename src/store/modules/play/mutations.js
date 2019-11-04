@@ -13,11 +13,13 @@ import {
   CLEAR,
   UPDATE_MODE,
   UPDATE_SONG_LYRIC,
+  UPDATE_WAY,
 } from './mutation-types';
 
 export default {
   [ADD](state, payload) {
     const index = state.songs.findIndex(song => song.songmid === payload.songmid);
+    // if (index === -1) state.songs = [...state.songs, payload];
     if (index === -1) state.songs.push(payload);
     state.index = index === -1 ? state.songs.length - 1 : index;
     state.fullscreen = true;
@@ -30,6 +32,7 @@ export default {
     state.playState = true;
   },
   [DELETE](state, payload) {
+    // state.songs = state.songs.filter((song, index) => index !== payload);
     state.songs.splice(payload, 1);
     if (state.songs.length === 0) {
       state.index = -1;
@@ -82,5 +85,8 @@ export default {
   },
   [UPDATE_MODE](state, payload) {
     state.mode = payload;
+  },
+  [UPDATE_WAY](state, payload) {
+    state.way = payload;
   },
 };

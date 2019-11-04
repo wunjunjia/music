@@ -13,6 +13,7 @@ export const CHOOSE = 'CHOOSE';
 export const CLEAR = 'CLEAR';
 export const UPDATE_MODE = 'UPDATE_MODE';
 export const UPDATE_SONG_LYRIC = 'UPDATE_SONG_LYRIC';
+export const UPDATE_WAY = 'UPDATE_WAY';
 
 export default {
   ADD,
@@ -30,4 +31,5 @@ export default {
   CLEAR,
   UPDATE_MODE,
   UPDATE_SONG_LYRIC,
+  UPDATE_WAY,
 };

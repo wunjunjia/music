@@ -80,8 +80,9 @@ export default {
     show(value) {
       if (!value) return;
       this.$nextTick(() => {
-        // 由于songs是动态的，而this.refs.song取到的数组顺序不一定与songs数组顺序一致， 所以依赖索引取值是不可靠的。
+        // 之所以需要这里手动刷新是因为当playList的display是hidden的时候，是无法取到元素的样式值的，那么这样的话BScroll自然无法正常计算，导致无法滚动。
         this.$refs.scrollView.refresh();
+        // 由于songs是动态的，而this.refs.song取到的数组顺序不一定与songs数组顺序一致， 所以依赖索引取值是不可靠的。
         const songs = this.$refs.song;
         const song = songs.find(song => song.dataset.songmid === this.song.songmid);
         this.$refs.scrollView.scrollToElement(song);
@@ -93,7 +94,6 @@ export default {
       this[UPDATE_SHOW](false);
     },
     clear() {
-      this.$refs.confirm.toggle();
       this[UPDATE_BOTTOM]('0px');
       this[UPDATE_SHOW](false);
       this[CLEAR]();
@@ -117,13 +117,16 @@ export default {
     remove(index) {
       const handle = () => {
         this[DELETE](index);
-        this.$nextTick(() => {
-          this.$refs.scrollView.refresh();
-        });
         if (this.songs.length === 0) {
           this[UPDATE_BOTTOM]('0px');
           this[UPDATE_SHOW](false);
         }
+        this.$nextTick(() => {
+          this.$refs.scrollView.refresh();
+          const songs = this.$refs.song;
+          const song = songs.find(song => song.dataset.songmid === this.song.songmid);
+          this.$refs.scrollView.scrollToElement(song);
+        });
       };
 
       if (this.loading) return;

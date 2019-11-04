@@ -10,6 +10,7 @@ const state = {
   index: -1,
   songs: [],
   mode: SEQUENCE,
+  way: '',
 };
 
 const getters = {

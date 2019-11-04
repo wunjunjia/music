@@ -4,28 +4,28 @@
 <script type="text/javascript">
 import { mapGetters, mapActions } from 'vuex';
 import mixin from '@/mixin';
-import { SINGER_DETAIL } from '@/config';
+import { CD_DETAIL } from '@/config';
 
 const { detail } = mixin;
 export default {
-  name: 'SingerDetail',
+  name: 'CdDetail',
   data() {
     return {
-      keys: ['serial', 'name'],
+      keys: ['id', 'desc'],
     };
   },
   mixins: [detail],
   computed: {
-    ...mapGetters('singer', ['find']),
+    ...mapGetters('cd', ['find']),
   },
   methods: {
-    getDetail(serail) {
-      return this.getSingerDetail(serail);
+    getDetail(id) {
+      return this.getCdDetail(id);
     },
-    ...mapActions('singer', ['getSingerDetail']),
+    ...mapActions('cd', ['getCdDetail']),
   },
   created() {
-    if (this.way !== SINGER_DETAIL) this.updateWay(SINGER_DETAIL);
+    if (this.way !== CD_DETAIL) this.updateWay(CD_DETAIL);
   },
 };
 

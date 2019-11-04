@@ -24,3 +24,18 @@
         transform: rotate(360deg);
     }
 }
+
+.detail-enter,
+.detail-leave-to {
+    transform: translateX(100%);
+}
+
+.detail-enter-active,
+.detail-leave-active {
+    transition: transform .2s ease;
+}
+
+.detail-enter-to,
+.detail-leave {
+    transform: translateX(0);
+}

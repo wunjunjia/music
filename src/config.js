@@ -9,7 +9,7 @@ export const slideParam = {
   needNewCode: 1,
 };
 
-export const songListParam = {
+export const cdListParam = {
   platform: 'yqq',
   hostUin: 0,
   sin: 0,
@@ -55,6 +55,8 @@ export const singerDetailParam = {
 
 export const SUCCESS = 0;
 
+export const ERROR = 1;
+
 export const letters = {
   A: 1,
   B: 2,
@@ -87,6 +89,9 @@ export const letters = {
 export const SEQUENCE = 0;
 export const RANDOM = 1;
 export const LOOP = 2;
+
+export const SINGER_DETAIL = 'SINGER_DETAIL';
+export const CD_DETAIL = 'CD_DETAIL';
 
 export default {
 

@@ -5,7 +5,7 @@
         <li v-for="(group, index) in groups" :key="index" ref="group" class="group">
           <h1 class="title">{{ group.text }}</h1>
           <ul class="singerList">
-            <li v-for="singer in group.singers" :key="singer.id" class="item" @click="handleClick(singer.serial)">
+            <li v-for="singer in group.singers" :key="singer.id" class="item" @click="gotoDetail(singer.serial)">
               <img v-lazy="singer.image" alt="avatar">
               <p class="name">{{ singer.name }}</p>
             </li>
@@ -31,9 +31,15 @@ import ScrollView from '@/components/ScrollView/index.vue';
 import Loading from '@/components/Loading/index.vue';
 import Singer from '@/model/singer';
 import { jsonp } from '@/utils';
-import { singerListParam, SUCCESS, letters } from '@/config';
+import {
+  singerListParam,
+  SUCCESS,
+  letters,
+} from '@/config';
 import { BATCH_ADD } from '@/store/modules/singer/mutation-types';
+import mixin from '@/mixin';
 
+const { bottom } = mixin;
 export default {
   name: 'Singer',
   data() {
@@ -48,6 +54,7 @@ export default {
       }))),
     };
   },
+  mixins: [bottom],
   methods: {
     handleTouchStart(e) {
       this.startY = e.targetTouches[0].clientY;
@@ -89,20 +96,10 @@ export default {
         }
       }
     },
-    handleClick(serial) {
+    gotoDetail(serial) {
       this.$router.history.push({
         path: `/singer/${serial}`,
       });
-    },
-    monitor() {
-      const timer = setTimeout(() => {
-        clearTimeout(timer);
-        if (this.$refs.scrollView) {
-          this.$refs.scrollView.refresh();
-          return;
-        }
-        this.monitor();
-      }, 20);
     },
     ...mapMutations('singer', [BATCH_ADD]),
   },
@@ -133,7 +130,7 @@ export default {
           this.groups = this.groups.filter(item => item.singers.length > 0);
           this.loading = false;
           this.$nextTick(() => {
-            this.monitor();
+            this.$refs.scrollView.refresh();
           });
         }
       });
@@ -216,21 +213,6 @@ export default {
     top: 0;
     left: 0;
     right: 0;
-  }
-
-  .detail-enter,
-  .detail-leave-to {
-    transform: translateX(100%);
-  }
-
-  .detail-enter-active,
-  .detail-leave-active {
-    transition: transform .2s ease;
-  }
-
-  .detail-enter-to,
-  .detail-leave {
-    transform: translateX(0);
   }
 }
 
