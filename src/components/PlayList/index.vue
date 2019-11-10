@@ -1,5 +1,5 @@
 <template>
-  <transition name="playList">
+  <transition name="playList" @enter="enter">
     <div class="playList" v-show="show" @click.self="close">
       <div class="container">
         <div class="header">
@@ -9,23 +9,25 @@
           </div>
           <span class="clear" @click="handleClick"><i class="icon icon-clear"></i></span>
         </div>
-        <ScrollView style="max-height: 240px;" ref="scrollView">
+        <ScrollView style="max-height: 240px;" ref="scrollView" :dataSource="songs">
           <ul class="list">
             <li class="song" v-for="(song, i) in songs" :key="song.songmid" @click="play(song)" ref="song" :data-songmid="song.songmid">
               <span class="icon" :style="{ visibility: i === index ? 'visible' : 'hidden' }"><i class="icon-play"></i></span>
               <p class="name" :class="{ active: i === index, disable: !song.canplay }">{{song.songname}}</p>
-              <span class="icon"><i class="icon-not-favorite"></i></span>
+              <span class="icon" :class="{love: song.love}" @click.stop.prevent="toggleLove(song)">
+                <i :class="song.love ? 'icon-favorite' : 'icon-not-favorite'"></i>
+              </span>
               <span class="icon" @click.stop.prevent="remove(i)"><i class="icon-delete"></i></span>
             </li>
           </ul>
         </ScrollView>
-        <div class="add-btn">
+        <div class="add-btn" @click="toggleShow">
           <span class="icon"><i class="icon-add"></i></span>
           <span>添加歌曲到队列</span>
         </div>
         <div class="footer" @click="close">关闭</div>
       </div>
-      <Confirm ref="confirm" :confirm="clear" />
+      <ChooseSong ref="choose-song" />
     </div>
   </transition>
 </template>
@@ -42,11 +44,13 @@ import {
   CHOOSE,
   CLEAR,
   UPDATE_MODE,
+  UPDATE_SONG_LOVE,
 } from '@/store/modules/play/mutation-types';
 import { UPDATE_BOTTOM } from '@/store/modules/global/mutation-types';
+import { UPDATE_CONFIRM_SHOW, UPDATE_CONFIRM_TITLE, UPDATE_CONFIRM_EXECUTE } from '@/store/modules/confirm/mutation-types';
 import { LOOP, RANDOM } from '@/config';
 import ScrollView from '@/components/ScrollView/index.vue';
-import Confirm from './Confirm/index.vue';
+import ChooseSong from '@/components/ChooseSong/index.vue';
 
 export default {
   name: 'playList',
@@ -74,45 +78,45 @@ export default {
   },
   components: {
     ScrollView,
-    Confirm,
+    ChooseSong,
   },
-  watch: {
-    show(value) {
-      if (!value) return;
+  methods: {
+    enter() {
+      // 之所以需要这里手动刷新是因为当playList的display是hidden的时候，是无法取到元素的样式值的，那么这样的话BScroll自然无法正常计算，导致无法滚动。
+      // 这条语句注意不要放到this.$nextTick里面，意味这个refresh方法内部的执行就是在nextTick中执行，如果放到下面的nextTick里面，会导致刷新的时机比滚动到指定位置的时机晚，那这样肯定是不会正常滚动到指定位置的。
+      this.$refs.scrollView.refresh();
       this.$nextTick(() => {
-        // 之所以需要这里手动刷新是因为当playList的display是hidden的时候，是无法取到元素的样式值的，那么这样的话BScroll自然无法正常计算，导致无法滚动。
-        this.$refs.scrollView.refresh();
         // 由于songs是动态的，而this.refs.song取到的数组顺序不一定与songs数组顺序一致， 所以依赖索引取值是不可靠的。
         const songs = this.$refs.song;
         const song = songs.find(song => song.dataset.songmid === this.song.songmid);
         this.$refs.scrollView.scrollToElement(song);
       });
     },
-  },
-  methods: {
     close() {
       this[UPDATE_SHOW](false);
     },
-    clear() {
+    confirm() {
       this[UPDATE_BOTTOM]('0px');
       this[UPDATE_SHOW](false);
       this[CLEAR]();
     },
     handleClick() {
-      this.$refs.confirm.toggle();
+      this[UPDATE_CONFIRM_SHOW](true);
+      this[UPDATE_CONFIRM_TITLE]('是否清空播放列表');
+      this[UPDATE_CONFIRM_EXECUTE](this.confirm);
+    },
+    toggleShow() {
+      this.$refs['choose-song'].toggleShow();
     },
     toggleMode() {
       this[UPDATE_MODE](this.mode < 2 ? this.mode + 1 : 0);
     },
+    toggleLove(song) {
+      this[UPDATE_SONG_LOVE](song);
+    },
     play(song) {
       if (!song.canplay || this.loading) return;
-      this.choose({ mutation: CHOOSE, song })
-        .then((res) => {
-          if (!res) console.log('TT 没有播放版权');
-        })
-        .catch((e) => {
-          console.log(e);
-        });
+      this.choose({ mutation: CHOOSE, song });
     },
     remove(index) {
       const handle = () => {
@@ -121,12 +125,6 @@ export default {
           this[UPDATE_BOTTOM]('0px');
           this[UPDATE_SHOW](false);
         }
-        this.$nextTick(() => {
-          this.$refs.scrollView.refresh();
-          const songs = this.$refs.song;
-          const song = songs.find(song => song.dataset.songmid === this.song.songmid);
-          this.$refs.scrollView.scrollToElement(song);
-        });
       };
 
       if (this.loading) return;
@@ -141,14 +139,12 @@ export default {
             return;
           }
           this.clear();
-        })
-        .catch((e) => {
-          console.log(e);
         });
     },
-    ...mapMutations('play', [DELETE, CLEAR, UPDATE_MODE]),
+    ...mapMutations('play', [DELETE, CLEAR, UPDATE_MODE, UPDATE_SONG_LOVE]),
     ...mapMutations('playList', [UPDATE_SHOW]),
     ...mapMutations('global', [UPDATE_BOTTOM]),
+    ...mapMutations('confirm', [UPDATE_CONFIRM_SHOW, UPDATE_CONFIRM_TITLE, UPDATE_CONFIRM_EXECUTE]),
     ...mapActions('play', ['choose', 'toggle']),
   },
 };
@@ -229,6 +225,10 @@ export default {
           text-align: center;
           font-size: $font-size-small;
           color: $color-theme;
+
+          &.love {
+            color: $color-sub-theme;
+          }
 
           &:first-child {
             width: 12px;

@@ -9,7 +9,6 @@
       </div>
     </div>
     <div class="panel lyric-wrapper" ref="lyric-wrapper">
-      <!-- 此歌曲为没有填词的纯音乐，请您欣赏 -->
       <ScrollView :dataSource="lyric.lines" ref="scrollView">
         <ul class="list">
           <li v-for="(line, index) in lyric.lines" :key="index" :class="lineNum === index ? 'active' : ''" ref="line">
@@ -56,14 +55,8 @@ export default {
     ...mapGetters('play', ['song']),
   },
   watch: {
-    fullscreen(value) {
-      // 之所以要手动滚动到指定歌词是因为当normalPlay关闭之后重新显示歌词初始状态不会自动滚动到指定歌词
-      if (!value) return;
-      this.$nextTick(() => {
-        this.$refs.scrollView.refresh();
-        const el = this.lyric.lines.length === 0 ? this.$refs.line : this.$refs.line[this.lineNum > 5 ? this.lineNum - 5 : 0];
-        this.$refs.scrollView.scrollToElement(el);
-      });
+    lyric() {
+      this.txt = '';
     },
   },
   components: {
@@ -98,11 +91,8 @@ export default {
       this.$refs['avatar-wrapper'].style.transitionDuration = '0.4s';
       this.$refs['lyric-wrapper'].style.transitionDuration = '0.4s';
       const distanceX = el.changedTouches[0].clientX - this.startX;
-      if (distanceX < 0 && this.index === 1) return;
-      if (distanceX > 0 && this.index === 0) return;
-      if (distanceX === 0) return;
-      const value = Math.abs(distanceX);
-      if (value > 50) {
+      if ((distanceX < 0 && this.index === 1) || (distanceX > 0 && this.index === 0)) return;
+      if (Math.abs(distanceX) > 50) {
         this.index = this.index === 0 ? 1 : 0;
         this.toggleIndex(this.index);
       }
@@ -141,9 +131,11 @@ export default {
       normalAvatar.style.transform = 'translateX(-50%)';
       normalAvatar.style.transition = 'all .4s ease';
     },
-    refresh() {
+    afterEnter() {
+      this.$refs.scrollView.refresh();
       this.$nextTick(() => {
-        this.$refs.scrollView.refresh();
+        const el = this.lyric.lines.length === 0 ? this.$refs.line : this.$refs.line[this.lineNum > 5 ? this.lineNum - 5 : 0];
+        this.$refs.scrollView.scrollToElement(el);
       });
     },
   },
@@ -161,6 +153,7 @@ export default {
   >.panel {
     width: 100%;
     height: 100%;
+    overflow: hidden;
 
     .list {
       position: relative;

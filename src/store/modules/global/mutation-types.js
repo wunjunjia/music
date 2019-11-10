@@ -1,5 +1,7 @@
 export const UPDATE_BOTTOM = 'UPDATE_BOTTOM';
+export const UPDATE_SEARCH_HISTORY = 'UPDATE_SEARCH_HISTORY';
 
 export default {
   UPDATE_BOTTOM,
+  UPDATE_SEARCH_HISTORY,
 };

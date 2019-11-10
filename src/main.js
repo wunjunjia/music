@@ -5,7 +5,7 @@ import Slide from '@better-scroll/slide';
 import App from './App.vue';
 import router from './router';
 import store from './store';
-import '@/assets/css/index.scss';
+// import '@/assets/css/index.scss';
 import logo from '@/assets/logo.png';
 
 Vue.use(VueLazyload, {

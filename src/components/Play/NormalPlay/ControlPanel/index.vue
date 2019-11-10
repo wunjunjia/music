@@ -12,21 +12,22 @@
     <span class="icon right" :class="loading ? 'disable' : ''">
       <i class="icon-next" @click="toggleSong(toggle.bind(this, 'next'))"></i>
     </span>
-    <span class="icon right"><i class="icon-not-favorite"></i></span>
+    <span class="icon right" :class="{love: song.love}"><i :class="song.love ? 'icon-favorite' : 'icon-not-favorite'" @click="toggleLove"></i></span>
   </div>
 </template>
 <script type="text/javascript">
-import { mapState, mapActions, mapMutations } from 'vuex';
+import {
+  mapState,
+  mapGetters,
+  mapActions,
+  mapMutations,
+} from 'vuex';
 import { LOOP, RANDOM } from '@/config';
-import { UPDATE_MODE } from '@/store/modules/play/mutation-types';
+import { UPDATE_MODE, UPDATE_PLAYSTATE, UPDATE_SONG_LOVE } from '@/store/modules/play/mutation-types';
 
 export default {
   name: 'ControlPanel',
   props: {
-    togglePlayState: {
-      type: Function,
-      required: true,
-    },
     updateCurrentTime: {
       type: Function,
       required: true,
@@ -45,14 +46,21 @@ export default {
           if (this.index === index) {
             this.updateCurrentTime(0);
             this.seek(0);
+            if (!this.playState) this[UPDATE_PLAYSTATE](true);
           }
         });
     },
+    togglePlayState() {
+      this[UPDATE_PLAYSTATE](!this.playState);
+    },
     toggleMode() {
-      this[UPDATE_MODE](this.mode < 2 ? this.mode + 1 : 0);
+      this[UPDATE_MODE]((this.mode + 1) % 3);
+    },
+    toggleLove() {
+      this[UPDATE_SONG_LOVE](this.song);
     },
     ...mapActions('play', ['toggle']),
-    ...mapMutations('play', [UPDATE_MODE]),
+    ...mapMutations('play', [UPDATE_MODE, UPDATE_PLAYSTATE, UPDATE_SONG_LOVE]),
   },
   computed: {
     ...mapState('play', {
@@ -61,6 +69,7 @@ export default {
       index: state => state.index,
       mode: state => state.mode,
     }),
+    ...mapGetters('play', ['song']),
     icon() {
       if (this.mode === LOOP) return 'icon-loop';
       if (this.mode === RANDOM) return 'icon-random';
@@ -98,6 +107,10 @@ export default {
 
     &.disable {
       color: hsla(0, 0%, 100%, .3);
+    }
+
+    &.love {
+      color: $color-sub-theme;
     }
   }
 }

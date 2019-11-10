@@ -9,7 +9,7 @@
         <router-link to="/singer">歌手</router-link>
       </li>
       <li class="item">
-        <router-link to="/rank">排名</router-link>
+        <router-link to="/rank">排行</router-link>
       </li>
       <li class="item">
         <router-link to="/search">搜索</router-link>
@@ -19,9 +19,10 @@
       <keep-alive>
         <router-view></router-view>
       </keep-alive>
+      <Play />
+      <PlayList />
     </div>
-    <Play />
-    <PlayList />
+    <Confirm />
   </div>
 </template>
 <script>
@@ -29,6 +30,7 @@ import { mapState } from 'vuex';
 import Header from '@/components/Header/index.vue';
 import Play from '@/components/Play/index.vue';
 import PlayList from '@/components/PlayList/index.vue';
+import Confirm from '@/components/Confirm/index.vue';
 
 export default {
   name: 'App',
@@ -41,6 +43,7 @@ export default {
     Header,
     Play,
     PlayList,
+    Confirm,
   },
 };
 

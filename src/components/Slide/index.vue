@@ -25,9 +25,6 @@ export default {
     length: {
       type: Number,
     },
-    refresh: {
-      type: Function,
-    },
   },
   data() {
     return {
@@ -41,12 +38,16 @@ export default {
           lis[i].style.width = `${document.documentElement.clientWidth}px`;
         }
         this.refresh();
-        this.slide.refresh();
         this.autoGoNext();
       }, 100).bind(this),
     };
   },
   methods: {
+    refresh() {
+      this.$nextTick(() => {
+        this.slide.refresh();
+      });
+    },
     initScroll() {
       this.slide = new BScroll(this.$refs.slide, {
         scrollX: true,
@@ -79,24 +80,13 @@ export default {
         this.slide.next();
       }, 1000);
     },
-    monitor() {
-      const timer = setTimeout(() => {
-        clearTimeout(timer);
-        if (this.$refs.slide.offsetHeight === 0) this.monitor();
-        else {
-          this.refresh();
-          this.initScroll();
-        }
-      }, 20);
-    },
   },
   mounted() {
-    if (this.$refs.slide.offsetHeight === 0) this.monitor();
-    else this.initScroll();
+    this.initScroll();
   },
   activated() {
     this.$nextTick(() => {
-      this.slide.refresh();
+      this.refresh();
       this.autoGoNext();
     });
   },

@@ -13,12 +13,15 @@
     </div>
     <div class="content" ref="content">
       <ScrollView ref="scrollView" style="overflow: visible; position: absolute; bottom: 0;" :handleScroll="handleScroll" :dataSource="target.songs">
-        <ul class="songList">
-          <li class="song" v-for="song in target.songs" :key="song.songid" @click="gotoPlay(song)">
-            <p class="primary" :class="song.canplay ? '' : 'disable'">{{ song.songname }}</p>
-            <p class="secondary">
-              <span v-for="name in song.authors" :key="name">{{name}}</span>·{{ song.albumname }}
-            </p>
+        <ul class="songList" ref="songList">
+          <li class="song" v-for="(song, index) in target.songs" :key="song.songid" @click="gotoPlay(song)">
+            <slot :index="index"></slot>
+            <div class="content">
+              <p class="primary" :class="song.canplay ? '' : 'disable'">{{ song.songname }}</p>
+              <p class="secondary">
+                <span v-for="name in song.authors" :key="name">{{name}}</span>·{{ song.albumname }}
+              </p>
+            </div>
           </li>
         </ul>
       </ScrollView>
@@ -40,9 +43,22 @@ import { RANDOM } from '@/config';
 
 export default {
   name: 'Detail',
+  data() {
+    return {
+      flag: false,
+    };
+  },
   props: {
     target: {
       type: Object,
+      required: true,
+    },
+    more: {
+      type: Boolean,
+      required: true,
+    },
+    loadMore: {
+      type: Function,
       required: true,
     },
   },
@@ -59,28 +75,16 @@ export default {
       if (this.mode !== RANDOM) this[UPDATE_MODE](RANDOM);
       this.random(this.target.songs.filter(song => song.canplay))
         .then((res) => {
-          if (!res) {
-            console.log('TT 没有版权');
-            return;
-          }
+          if (!res) return;
           if (this.bottom === '0px') this[UPDATE_BOTTOM]('60px');
-        })
-        .catch((e) => {
-          console.log(e);
         });
     },
     gotoPlay(song) {
       if (!song.canplay || this.loading) return;
       this.choose({ mutation: ADD, song })
         .then((res) => {
-          if (!res) {
-            console.log('TT 没有版权');
-            return;
-          }
+          if (!res) return;
           if (this.bottom === '0px') this[UPDATE_BOTTOM]('60px');
-        })
-        .catch((e) => {
-          console.log(e);
         });
     },
     handleScroll(pos) {
@@ -91,6 +95,18 @@ export default {
       }
       const top = offsetHeight + pos.y >= 40 ? offsetHeight + pos.y : 40;
       this.$refs.content.style.top = `${top}px`;
+      if (this.more && this.$refs.songList.offsetHeight + pos.y <= this.$refs.scrollView.$el.offsetHeight + 128) {
+        if (this.flag) return;
+        this.flag = true;
+        this.loadMore();
+        this.$nextTick(() => {
+          this.$refs.scrollView.refresh();
+        });
+        const timer = setTimeout(() => {
+          clearTimeout(timer);
+          this.flag = false;
+        }, 1000);
+      }
     },
     refresh() {
       const offsetHeight = this.$refs.avatar.offsetHeight;
@@ -129,7 +145,6 @@ export default {
   left: 0;
   right: 0;
   background: $color-background;
-  z-index: 999;
 
   >.header {
     position: absolute;
@@ -222,34 +237,41 @@ export default {
       background: #222;
 
       >.song {
+        display: flex;
         height: 44px;
         padding: 10px 0;
+        align-items: center;
 
-        >p {
-          height: 20px;
-          line-height: 20px;
-          @include no-wrap();
+        >.content {
+          flex: 1;
+          overflow: hidden;
 
-          &.primary {
-            color: #fff;
+          >p {
+            height: 20px;
+            line-height: 20px;
+            @include no-wrap();
 
-            &.disable {
-              color: hsla(0, 0%, 100%, .3);
-              text-decoration: line-through;
-            }
-          }
+            &.primary {
+              color: #fff;
 
-          &.secondary {
-            margin-top: 4px;
-            color: hsla(0, 0%, 100%, .3);
-
-            >span {
-              &::after {
-                content: '/';
+              &.disable {
+                color: hsla(0, 0%, 100%, .3);
+                text-decoration: line-through;
               }
+            }
 
-              &:last-child::after {
-                content: '';
+            &.secondary {
+              margin-top: 4px;
+              color: hsla(0, 0%, 100%, .3);
+
+              >span {
+                &::after {
+                  content: '/';
+                }
+
+                &:last-child::after {
+                  content: '';
+                }
               }
             }
           }

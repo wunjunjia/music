@@ -5,9 +5,6 @@ const axios = require('axios');
 
 const router = express.Router();
 
-const SINGER_DETAIL = 'SINGER_DETAIL';
-const CD_DETAIL = 'CD_DETAIL';
-
 const instance = axios.create({
   headers: {
     Origin: 'https://y.qq.com',
@@ -16,7 +13,7 @@ const instance = axios.create({
   },
 });
 
-router.get('/cdList', (req, res, next) => {
+router.get('/cdList', (req, res) => {
   const paramString = Object.keys(req.query).reduce((result, key) => {
     result.push(`${key}=${req.query[key]}`);
     return result;
@@ -43,7 +40,35 @@ router.get('/cdList', (req, res, next) => {
   });
 });
 
-router.get('/vkey', (req, res, next) => {
+router.get('/cdDetail', (req, res) => {
+  instance.get('https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg', {
+      headers: {
+        Referer: `https://y.qq.com/n/yqq/playlist/${req.query.id}.html`,
+      },
+      params: {
+        type: 1,
+        json: 1,
+        utf8: 1,
+        onlysong: 0,
+        new_format: 1,
+        disstid: req.query.id,
+        g_tk: 5381,
+        loginUin: 0,
+        hostUin: 0,
+        format: 'json',
+        inCharset: 'utf8',
+        outCharset: 'utf-8',
+        notice: 0,
+        platform: 'yqq.json',
+        needNewCode: 0,
+      },
+    })
+    .then((result) => {
+      res.json(result.data);
+    });
+});
+
+router.get('/vkey', (req, res) => {
   instance.get('https://u.y.qq.com/cgi-bin/musicu.fcg', {
       params: {
         '-': 'getplaysongvkey925406070364283',
@@ -92,68 +117,12 @@ router.get('/vkey', (req, res, next) => {
     });
 });
 
-const lyric = {
-  [SINGER_DETAIL]({songmid}) {
-    return {
+router.get('/lyric', (req, res) => {
+  instance.get('https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg', {
       params: {
         '-': 'MusicJsonCallback_lrc',
         pcachetime: Date.now(),
-        songmid,
-        g_tk: 5381,
-        loginUin: 0,
-        hostUin: 0,
-        format: 'json',
-        inCharset: 'utf8',
-        outCharset: 'utf8',
-        notice: 0,
-        platform: 'yqq.json',
-        needNewCode: 0,
-      },
-    };
-  },
-  [CD_DETAIL]({songmid, id}) {
-    return {
-      headers: {
-        Referer: `https://y.qq.com/n/yqq/song/${songmid}.html`,
-      },
-      params: {
-        nobase64: 1,
-        musicid: id,
-        '-': 'jsonp1',
-        g_tk: 5381,
-        loginUin: 0,
-        hostUin: 0,
-        format: 'json',
-        inCharset: 'utf8',
-        outCharset: 'utf-8',
-        notice: 0,
-        platform: 'yqq.json',
-        needNewCode: 0,
-      },
-    };
-  },
-};
-
-router.get('/lyric', (req, res, next) => {
-  const { way, ...rest } = req.query;
-  instance.get('https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg', lyric[way](rest))
-    .then((result) => {
-      res.json(result.data);
-    });
-});
-
-router.get('/cdDetail', (req, res, next) => {
-  instance.get('https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg', {
-      headers: {
-        Referer: `https://y.qq.com/n/yqq/playlist/${req.query.id}.html`,
-      },
-      params: {
-        type: 1,
-        json: 1,
-        utf8: 1,
-        onlysong: 0,
-        new_format: 1,
-        disstid: req.query.id,
+        songmid: req.query.songmid,
         g_tk: 5381,
         loginUin: 0,
         hostUin: 0,
@@ -168,6 +137,68 @@ router.get('/cdDetail', (req, res, next) => {
     .then((result) => {
       res.json(result.data);
     });
+});
+
+router.get('/rankList', (req, res) => {
+  instance.get('https://u.y.qq.com/cgi-bin/musicu.fcg', {
+      headers: {
+        Referer: 'https://y.qq.com/m/index.html?tab=toplist',
+      },
+      params: {
+        _: Date.now(),
+        data: {
+          comm: {
+            g_tk: 5381,
+            uin: '',
+            format: 'json',
+            inCharset: 'utf-8',
+            outCharset: 'utf-8',
+            notice: 0,
+            platform: 'h5',
+            needNewCode: 1,
+            ct: 23,
+            cv: 0,
+          },
+          topList: { module: 'musicToplist.ToplistInfoServer', method: 'GetAll', param: {} },
+        },
+      },
+    })
+    .then((result) => {
+      res.json(result.data);
+    });
+});
+
+router.get('/search', (req, res) => {
+  instance.get('https://c.y.qq.com/soso/fcgi-bin/search_for_qq_cp', {
+    headers: {
+      Referer: 'https://y.qq.com/m/index.html',
+    },
+    params: {
+      _: Date.now(),
+      g_tk: 5381,
+      uin: '',
+      format: 'json',
+      inCharset: 'utf-8',
+      outCharset: 'utf-8',
+      notice: 0,
+      platform: 'h5',
+      needNewCode: 1,
+      w: req.query.search,
+      zhidaqu: 1,
+      catZhida: 1,
+      t: 0,
+      flag: 1,
+      ie: 'utf-8',
+      sem: 1,
+      aggr: 0,
+      perpage: req.query.count,
+      n: req.query.count,
+      p: req.query.pageIndex,
+      remoteplace: 'txt.mqq.all',
+    },
+  }).then((result) => {
+    res.json(result.data);
+  });
 });
 
 module.exports = router;

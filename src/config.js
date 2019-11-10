@@ -1,9 +1,15 @@
-export const slideParam = {
-  g_tk: '1928093487',
+const common = {
+  g_tk: 1928093487,
   inCharset: 'utf-8',
   outCharset: 'utf-8',
   notice: 0,
   format: 'jsonp',
+  platform: 'yqq',
+  needNewCode: 0,
+};
+
+export const slideParam = {
+  ...common,
   platform: 'h5',
   uin: 0,
   needNewCode: 1,
@@ -22,36 +28,47 @@ export const cdListParam = {
 };
 
 export const singerListParam = {
-  g_tk: 1928093487,
-  inCharset: 'utf-8',
-  outCharset: 'utf-8',
-  notice: 0,
-  format: 'jsonp',
+  ...common,
   channel: 'singer',
   page: 'list',
   key: 'all_all_all',
   pagesize: 100,
   pagenum: 1,
   hostUin: 0,
-  needNewCode: 0,
-  platform: 'yqq',
 };
 
 export const singerDetailParam = {
-  g_tk: 1928093487,
-  inCharset: 'utf-8',
-  outCharset: 'utf-8',
-  notice: 0,
-  format: 'jsonp',
+  ...common,
   hostUin: 0,
-  needNewCode: 0,
-  platform: 'yqq',
   order: 'listen',
   begin: 0,
   num: 80,
   songstatus: 1,
 };
 
+export const rankListParam = {
+  ...common,
+  uin: 0,
+  needNewCode: 1,
+  platform: 'h5',
+};
+
+export const rankDetailParam = {
+  ...common,
+  needNewCode: 1,
+  uin: 0,
+  tpl: 3,
+  page: 'detail',
+  type: 'top',
+  platform: 'h5',
+};
+
+export const hotKeyParam = {
+  ...common,
+  uin: 0,
+  needNewCode: 1,
+  platform: 'h5',
+};
 
 export const SUCCESS = 0;
 
@@ -90,8 +107,9 @@ export const SEQUENCE = 0;
 export const RANDOM = 1;
 export const LOOP = 2;
 
-export const SINGER_DETAIL = 'SINGER_DETAIL';
-export const CD_DETAIL = 'CD_DETAIL';
+export const SEARCH_HISTORY = 'SEARCH_HISTORY';
+export const RECENT_PLAYBACK = 'RECENT_PLAYBACK';
+export const LOVE = 'LOVE';
 
 export default {
 

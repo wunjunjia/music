@@ -1,7 +1,7 @@
 <template>
   <div class="singer">
     <ScrollView ref="scrollView" :handleScroll="handleScroll">
-      <ul v-show="!this.loading">
+      <ul v-show="!loading">
         <li v-for="(group, index) in groups" :key="index" ref="group" class="group">
           <h1 class="title">{{ group.text }}</h1>
           <ul class="singerList">
@@ -13,13 +13,13 @@
         </li>
       </ul>
     </ScrollView>
-    <Loading v-if="this.loading" />
+    <Loading v-if="loading" />
+    <h1 class="cue title" ref="cue">热门</h1>
     <ul class="letterList" @touchstart.stop.prevent="handleTouchStart" @touchmove.stop.prevent="handleTouchMove">
       <li class="item" :class="{active: currentIndex === index}" v-for="(group, index) in groups" :key="index" ref="letter">
         {{ group.text === '热门' ? '热' : group.text }}
       </li>
     </ul>
-    <h1 class="cue title" ref="cue">热门</h1>
     <transition name="detail">
       <router-view></router-view>
     </transition>
@@ -129,11 +129,15 @@ export default {
           });
           this.groups = this.groups.filter(item => item.singers.length > 0);
           this.loading = false;
-          this.$nextTick(() => {
-            this.$refs.scrollView.refresh();
-          });
+          this.refresh();
         }
       });
+  },
+  activated() {
+    this.currentIndex = 0;
+    this.$nextTick(() => {
+      this.$refs.cue.innerHTML = '热门';
+    });
   },
 };
 
@@ -187,14 +191,12 @@ export default {
     top: 50%;
     right: 0;
     transform: translateY(-50%);
-    z-index: 999;
     padding: 20px 0;
     background: rgba(0, 0, 0, .3);
 
     >.item {
       width: 2ch;
-      padding: 3px 0;
-      margin-right: 3px;
+      padding: 3px 3px 3px 0;
       line-height: 1;
       color: hsla(0, 0%, 100%, .5);
       font-size: $font-size-small;

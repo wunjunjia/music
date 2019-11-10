@@ -1,11 +1,21 @@
 import axios from 'axios';
-import { BATCH_ADD, UPDATE_SONGS_DATA } from './mutation-types';
+import {
+  BATCH_ADD,
+  UPDATE_SONGS_DATA,
+  UPDATE_RESERVE,
+  UPDATE_INDEX,
+  UPDATE_MORE,
+} from './mutation-types';
 import { cdListParam, SUCCESS } from '@/config';
 import Cd from '@/model/cd';
 import Song from '@/model/song';
 
 const state = {
   cds: [],
+  count: 20,
+  index: {},
+  reserve: {},
+  mores: {},
 };
 
 const getters = {
@@ -28,21 +38,21 @@ const actions = {
       })
       .catch(e => Promise.reject(e));
   },
-  getCdDetail({ commit }, payload) {
-    return axios.get('/api/cdDetail', { params: { id: payload } })
+  getCdDetail({ commit }, id) {
+    return axios.get('/api/cdDetail', { params: { id } })
       .then((res) => {
         const songs = res.data.cdlist[0].songlist.map(song => new Song({
           authors: song.singer.map(singer => singer.name),
-          strMediaMid: song.file.media_mid,
           songmid: song.mid,
-          id: song.id,
           albumname: song.album.name,
           albummid: song.album.mid,
           songname: song.name,
           interval: song.interval,
         }));
-        commit(UPDATE_SONGS_DATA, { id: payload, songs });
-        return songs;
+        commit(UPDATE_RESERVE, { songs, id });
+        commit(UPDATE_INDEX, id);
+        commit(UPDATE_MORE, id);
+        commit(UPDATE_SONGS_DATA, id);
       });
   },
 };
@@ -51,9 +61,22 @@ const mutations = {
   [BATCH_ADD](state, payload) {
     state.cds = payload;
   },
-  [UPDATE_SONGS_DATA](state, { id, songs }) {
-    const cd = state.cds.find(cd => cd.id === id);
-    cd.songs = songs;
+  [UPDATE_RESERVE](state, { songs, id }) {
+    state.reserve = { ...state.reserve, [id]: songs };
+  },
+  [UPDATE_INDEX](state, payload) {
+    state.index = { ...state.index, [payload]: 0 };
+  },
+  [UPDATE_MORE](state, payload) {
+    state.mores = { ...state.mores, [payload]: true };
+  },
+  [UPDATE_SONGS_DATA](state, payload) {
+    const cd = state.cds.find(cd => cd.id === payload);
+    const reserve = state.reserve[payload];
+    const index = state.index[payload];
+    cd.songs = [...cd.songs, ...reserve.slice(index * state.count, (index + 1) * state.count)];
+    state.index = { ...state.index, [payload]: index + 1 };
+    if (cd.songs.length === reserve.length) state.mores = { ...state.mores, [payload]: false };
   },
 };
 

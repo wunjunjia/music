@@ -37,35 +37,34 @@ export default {
     },
     dataSource: {
       type: Array,
-      // require: true,
       default: () => [],
     },
   },
   watch: {
-    dataSource(current, prev) {
-      // 只需监听数组从无到有的时候手动刷新
-      if (prev.length === 0) {
-        this.$nextTick(() => {
-          this.scroll.refresh();
-        });
-      }
+    dataSource() {
+      this.refresh();
     },
   },
   methods: {
     refresh() {
-      this.scroll.refresh();
+      this.$nextTick(() => {
+        this.scroll.refresh();
+      });
     },
     scrollToElement(el, duration = 0) {
       this.scroll.scrollToElement(el, duration);
     },
+    initScroll() {
+      this.scroll = new BScroll(this.$refs['scroll-container'], {
+        probeType: this.probeType,
+        click: this.click,
+        bounce: this.bounce,
+      });
+      this.scroll.on('scroll', this.handleScroll);
+    },
   },
   mounted() {
-    this.scroll = new BScroll(this.$refs['scroll-container'], {
-      probeType: this.probeType,
-      click: this.click,
-      bounce: this.bounce,
-    });
-    this.scroll.on('scroll', this.handleScroll);
+    this.initScroll();
   },
   beforeDestroy() {
     this.scroll.destroy();

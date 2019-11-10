@@ -1,17 +1,23 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const favicon = require('serve-favicon');
 const router = require('./router');
 
 const app = express();
 
+app.use(favicon(path.join(__dirname, './assets/favicon.ico')));
+app.use('/public/', express.static(path.join(__dirname, './assets/public')));
+
 app.use('/api', router);
 
-// app.use((req, res) => {
-//   console.log(req.query)
-//   const { jsonpCallback } = req.query
-//   res.setHeader('Content-type', 'application/x-javascript;charset=utf-8')
-//   res.send(`${jsonpCallback}('hello world')`)
-// })
+app.use((req, res) => {
+  fs.readFile(path.join(__dirname, './assets/index.html'), 'utf-8', (err, data) => {
+    if (err) return res.json({ code: 1, message: 'server error' });
+    return res.send(data);
+  });
+});
 
-app.listen(3000, () => {
-  console.log('server start at port 3000');
+app.listen(3001, () => {
+  console.log('server start at port 3001');
 });

@@ -20,18 +20,11 @@
 <script type="text/javascript">
 import { mapState, mapGetters, mapMutations } from 'vuex';
 import { UPDATE_SHOW } from '@/store/modules/playList/mutation-types';
+import { UPDATE_PLAYSTATE, UPDATE_FULLSCREEN } from '@/store/modules/play/mutation-types';
 
 export default {
   name: 'MiniPlay',
   props: {
-    open: {
-      type: Function,
-      required: true,
-    },
-    togglePlayState: {
-      type: Function,
-      required: true,
-    },
     currentTime: {
       type: Number,
       required: true,
@@ -52,13 +45,20 @@ export default {
     },
   },
   methods: {
+    open() {
+      this[UPDATE_FULLSCREEN](true);
+    },
     getAvatarStyles() {
       return window.getComputedStyle(document.querySelector('.mini-avatar'));
     },
     toggleShow() {
       this[UPDATE_SHOW](!this.show);
     },
+    togglePlayState() {
+      this[UPDATE_PLAYSTATE](!this.playState);
+    },
     ...mapMutations('playList', [UPDATE_SHOW]),
+    ...mapMutations('play', [UPDATE_PLAYSTATE, UPDATE_FULLSCREEN]),
   },
 };
 

@@ -1,11 +1,11 @@
 <template>
   <div class="recommend">
-    <ScrollView ref="scrollView">
+    <ScrollView ref="scrollView" :dataSource="cds">
       <div class="content">
-        <Slide v-if="!loading" :length="slides.length" :refresh="refresh">
+        <Slide v-if="slides.length > 0" :length="slides.length">
           <ul class="slide-banner-wrapper">
             <li v-for="slide in slides" class="slide-item" :key="slide.id">
-              <img :src="slide.picUrl" alt="image">
+              <img :src="slide.picUrl" alt="image" @load="onload">
             </li>
           </ul>
         </Slide>
@@ -19,9 +19,9 @@
             </div>
           </li>
         </ul>
-        <Loading v-if="loading" />
       </div>
     </ScrollView>
+    <Loading v-if="loading" />
     <transition name="detail">
       <router-view></router-view>
     </transition>
@@ -43,6 +43,7 @@ export default {
     return {
       slides: [],
       loading: false,
+      flag: false,
     };
   },
   mixins: [bottom],
@@ -57,15 +58,15 @@ export default {
     }),
   },
   methods: {
-    refresh() {
-      this.$nextTick(() => {
-        this.$refs.scrollView.refresh();
-      });
-    },
     gotoDetail(id) {
       this.$router.history.push({
         path: `/recommend/${id}`,
       });
+    },
+    onload() {
+      if (this.flag) return;
+      this.flag = true;
+      this.refresh();
     },
     ...mapActions('cd', ['getCdList']),
   },
@@ -79,11 +80,7 @@ export default {
       if (slides.code === SUCCESS) {
         this.slides = slides.data.slider;
       }
-      this.refresh();
     });
-  },
-  activated() {
-    this.refresh();
   },
 };
 
@@ -92,39 +89,39 @@ export default {
 .recommend {
   width: 100%;
   height: 100%;
-}
 
-.content {
-  >.title {
-    color: $color-theme;
-    font-size: $font-size-medium;
-    height: 65px;
-    line-height: 65px;
-    text-align: center;
-  }
+  .content {
+    >.title {
+      color: $color-theme;
+      font-size: $font-size-medium;
+      height: 65px;
+      line-height: 65px;
+      text-align: center;
+    }
 
-  >.songList {
-    >.item {
-      display: flex;
-      align-items: center;
-      padding: 0 20px 20px 20px;
+    >.songList {
+      >.item {
+        display: flex;
+        align-items: center;
+        padding: 0 20px 20px 20px;
 
-      >img {
-        width: 60px;
-        height: 60px;
-        margin-right: 20px;
-      }
-
-      >.content {
-        font-size: $font-size-medium;
-        line-height: 20px;
-
-        >.name {
-          margin-bottom: 10px;
+        >img {
+          width: 60px;
+          height: 60px;
+          margin-right: 20px;
         }
 
-        >.description {
-          color: hsla(0, 0%, 100%, .3);
+        >.content {
+          font-size: $font-size-medium;
+          line-height: 20px;
+
+          >.name {
+            margin-bottom: 10px;
+          }
+
+          >.description {
+            color: hsla(0, 0%, 100%, .3);
+          }
         }
       }
     }
@@ -132,6 +129,8 @@ export default {
 }
 
 .slide-banner-wrapper {
+  min-height: 1px;
+  min-width: 1px;
   font-size: 0;
   white-space: nowrap;
 

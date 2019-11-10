@@ -1,38 +1,38 @@
 <template>
   <transition name="confirm">
-    <div class="confirm" v-if="show">
+    <div class="confirm" v-show="show">
       <div class="container">
-        <h1 class="title">是否清空播放列表</h1>
+        <h1 class="title">{{ title }}</h1>
         <div class="btn">
-          <span @click="toggle">取消</span>
-          <span @click="_confirm">清空</span>
+          <span @click="cancel">取消</span>
+          <span @click="ensure">清空</span>
         </div>
       </div>
     </div>
   </transition>
 </template>
 <script>
+import { mapState, mapMutations } from 'vuex';
+import { UPDATE_CONFIRM_SHOW } from '@/store/modules/confirm/mutation-types';
+
 export default {
   name: 'Confirm',
-  data() {
-    return {
-      show: false,
-    };
-  },
-  props: {
-    confirm: {
-      type: Function,
-      defalut: () => {},
-    },
+  computed: {
+    ...mapState('confirm', {
+      show: state => state.show,
+      title: state => state.title,
+      execute: state => state.execute,
+    }),
   },
   methods: {
-    toggle() {
-      this.show = !this.show;
+    cancel() {
+      this[UPDATE_CONFIRM_SHOW](false);
     },
-    _confirm() {
-      this.toggle();
-      this.confirm();
+    ensure() {
+      this[UPDATE_CONFIRM_SHOW](false);
+      this.execute();
     },
+    ...mapMutations('confirm', [UPDATE_CONFIRM_SHOW]),
   },
 };
 

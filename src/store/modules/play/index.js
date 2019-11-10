@@ -1,7 +1,7 @@
 import Song from '@/model/song';
 import actions from './actions';
 import mutations from './mutations';
-import { SEQUENCE } from '@/config';
+import { SEQUENCE, RECENT_PLAYBACK, LOVE } from '@/config';
 
 const state = {
   playState: false,
@@ -10,7 +10,8 @@ const state = {
   index: -1,
   songs: [],
   mode: SEQUENCE,
-  way: '',
+  recentPlay: JSON.parse(localStorage.getItem(RECENT_PLAYBACK) || '[]'),
+  loves: JSON.parse(localStorage.getItem(LOVE) || '[]'),
 };
 
 const getters = {
