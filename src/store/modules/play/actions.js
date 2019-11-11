@@ -104,7 +104,11 @@ export default {
         }
       }
 
-      core(operator.next(index, payload.length));
+      if (payload[index].audioSrc === '') core(operator.next(index, payload.length));
+      else {
+        handle({ song: payload[index] });
+        resolve(true);
+      }
     });
   },
   toggle({ state, commit }, o) {

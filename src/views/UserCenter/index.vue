@@ -53,7 +53,8 @@ export default {
       this.$router.history.go(-1);
     },
     randomPlay() {
-      if (this.loves.length === 0 && this.recentPlay.length === 0) return;
+      if (this.index === 0 && this.loves.length === 0) return;
+      if (this.index === 1 && this.recentPlay.length === 0) return;
       this.random(this.index === 0 ? this.loves.map(song => song) : this.recentPlay.map(song => song));
     },
     ...mapActions('play', ['random']),
