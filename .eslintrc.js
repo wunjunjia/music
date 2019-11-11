@@ -21,7 +21,6 @@ module.exports = {
     'no-shadow': 0,
     'no-unused-vars': 1,
     'no-underscore-dangle': 0,
-    'import/no-unresolved': 0,
   },
   parserOptions: {
     parser: 'babel-eslint',
